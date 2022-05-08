@@ -10,8 +10,7 @@ def mde():
     k = 5
     mdo = MDE(points, k)
     solution = mdo.execute_mdo()
-    #utils.show_solution(points, solution)
-    #print(utils.sum_of_square(points, solution))
+    utils.show_solution(points, solution)
 
 
 if __name__ == '__main__':
