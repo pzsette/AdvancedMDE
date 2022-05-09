@@ -30,5 +30,10 @@ class Population:
         print(scores)
         return best
 
-
-
+    def get_population_diversity(self):
+        diversity = 0
+        for i in range(0, len(self.solutions)):
+            for j in range(i + 1, len(self.solutions)):
+                diversity = diversity +\
+                           abs(self.solutions[i].get_score(self.points) - self.solutions[j].get_score(self.points))
+        return diversity

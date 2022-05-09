@@ -10,66 +10,77 @@ from Solution import Solution
 
 
 class MDE:
-    def __init__(self, points, n_clusters, population_size=10, f=0.5):
+    def __init__(self, points, n_clusters, population_size=10, f=0.5, max_iteration=3):
         self.points = points
         self.n_clusters = n_clusters
         self.population_size = population_size
         self.f = f
+        self.iteration = 0
+        self.max_iteration = max_iteration
 
     def execute_mdo(self):
         p = Population(size=self.population_size, n_clusters=self.n_clusters, points=self.points)
         p.generate_solutions()
 
         # Loop until stopping one stopping criterion is not satisfied
-        #while self.check_stopping_criterion():
+        while self.check_stopping_criterion():
+            # Crossover
+            for index, solution in enumerate(p.solutions):
+                print(f'Solution -> {index}')
+                print(f'Executing crossover...')
+                # Select solutions for crossover
+                crossover_solution = self.get_crossover_solution(index)
 
-        # Crossover
-        for index, solution in enumerate(p.solutions):
-            print(f'Solution -> {index}')
-            print(f'Executing crossover...')
-            # Select solutions for crossover
-            crossover_solution = self.get_crossover_solution(index)
+                # Execute crossover
+                # Get random solutions
+                solution3 = p.get_solution(crossover_solution[0])
+                solution2 = p.get_solution(crossover_solution[1])
+                solution1 = p.get_solution(crossover_solution[2])
+                # Subtraction (S2 - S3)
+                sub = self.solutions_subtraction(solution2, solution3)
+                # Function F(S2 - S3)
+                for point in sub:
+                    point[0] = self.f * point[0]
+                    point[1] = self.f * point[1]
+                # Sum S1 + F(S2 - S3)
+                cost_matrix = utils.build_bipartite_graph(sub, solution3.coordinate_matrix)
+                matched_points = self.get_matched_points(cost_matrix)
+                offspring_coordinate_matrix = np.empty(shape=(self.n_clusters, 2))
+                for index_centroid in range(self.n_clusters):
+                    points_sum = utils.sum_points(solution1.coordinate_matrix[index_centroid],
+                                                  sub[matched_points[index_centroid]])
+                    np.append(offspring_coordinate_matrix, points_sum)
+                # Build solution
+                offspring_membership_vector = self.get_memb_vect_from_coord_matrix(offspring_coordinate_matrix)
+                offspring = Solution(offspring_membership_vector, offspring_coordinate_matrix)
 
-            # Execute crossover
-            # Get random solutions
-            solution3 = p.get_solution(crossover_solution[0])
-            solution2 = p.get_solution(crossover_solution[1])
-            solution1 = p.get_solution(crossover_solution[2])
-            # Subtraction (S2 - S3)
-            sub = self.solutions_subtraction(solution2, solution3)
-            # Function F(S2 - S3)
-            for point in sub:
-                point[0] = self.f * point[0]
-                point[1] = self.f * point[1]
-            # Sum S1 + F(S2 - S3)
-            cost_matrix = utils.build_bipartite_graph(sub, solution3.coordinate_matrix)
-            matched_points = self.get_matched_points(cost_matrix)
-            offspring_coordinate_matrix = np.empty(shape=(self.n_clusters, 2))
-            for index_centroid in range(self.n_clusters):
-                points_sum = utils.sum_points(solution1.coordinate_matrix[index_centroid],
-                                              sub[matched_points[index_centroid]])
-                np.append(offspring_coordinate_matrix, points_sum)
-            # Build solution
-            offspring_membership_vector = self.get_memb_vect_from_coord_matrix(offspring_coordinate_matrix)
-            offspring = Solution(offspring_membership_vector, offspring_coordinate_matrix)
+                # Local optimization
+                print('Executing local optimization...')
+                l_offspring = KMeans.compute_solution(self.points, self.n_clusters, start=offspring.coordinate_matrix)
 
-            # Local optimization
-            print('Executing local optimization...')
-            l_offspring = KMeans.compute_solution(self.points, self.n_clusters, start=offspring.coordinate_matrix)
+                # Mutation
+                print('Executing mutation...')
 
-            # Mutation
-            print('Executing mutation...')
+                # Selection phase
+                print('Executing selection...')
+                if l_offspring.get_score(self.points) < p.get_solution(index).get_score(self.points):
+                    p.replace_solution(index, offspring)
+                print('------------------------------------')
 
-            # Selection phase
-            print('Executing selection...')
-            if l_offspring.get_score(self.points) < p.get_solution(index).get_score(self.points):
-                p.replace_solution(index, offspring)
-            print('------------------------------------')
         print('Computing best solution among population...')
         return p.get_best_solution()
 
-    def check_stopping_criterion(self):
-        return True
+    def check_stopping_criterion(self, p):
+        # Population diversity falls below a threshold
+        if p.get_population_diversity() < 50000:
+            return False
+        # Max consecutive iterations performed without any improvement in the best solution
+        if self.iteration >= self.max_iteration:
+            return False
+
+        print(f'Iteration: {self.iteration}')
+        self.iteration = self.iteration + 1
+        return False
 
     def get_crossover_solution(self, index):
         solutions = []
