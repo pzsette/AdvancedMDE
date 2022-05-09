@@ -21,3 +21,11 @@ class UtiliTest(unittest.TestCase):
         b_graph = utils.build_bipartite_graph(np.array([[1.0, 1.0], [-1.0, -1.0]]), np.array([[-1.0, 1.0], [1.0, -1.0]]))
         print(b_graph)
         self.assertTrue((b_graph == np.array([[2.0, 2.0], [2.0, 2.0]])).all())
+
+    def test_subtract_points(self):
+        self.assertNotEqual(utils.subtract_points([3.5, 3.5], [1.2, 1.2]), [4.7, 4.7])
+        self.assertEqual(utils.subtract_points([3.5, 3.5], [1.2, 1.2]), [2.3, 2.3])
+
+    def test_sum_points(self):
+        self.assertNotEqual(utils.sum_points([3.5, 3.5], [1.2, 1.2]), [2.3, 2.3])
+        self.assertEqual(utils.sum_points([3.5, 3.5], [1.2, 1.2]), [4.7, 4.7])

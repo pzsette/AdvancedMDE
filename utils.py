@@ -26,3 +26,17 @@ def build_bipartite_graph(coord_matrix1, coord_matrix2):
             cost_row.append(dst)
         cost_matrix.append(cost_row)
     return np.asarray(cost_matrix)
+
+
+# Execute point1 - point2
+def subtract_points(point1, point2):
+    x = point1[0] - point2[0]
+    y = point1[1] - point2[1]
+    return [x, y]
+
+
+# Execute point1 - point2
+def sum_points(point1, point2):
+    x = point1[0] + point2[0]
+    y = point1[1] + point2[1]
+    return [x, y]

@@ -46,11 +46,9 @@ class MDE:
             matched_points = self.get_matched_points(cost_matrix)
             offspring_coordinate_matrix = np.empty(shape=(self.n_clusters, 2))
             for index_centroid in range(self.n_clusters):
-                x = solution1.coordinate_matrix[index_centroid][0] + \
-                    sub[matched_points[index_centroid]][0]
-                y = solution1.coordinate_matrix[index_centroid][1] + \
-                    sub[matched_points[index_centroid]][1]
-                np.append(offspring_coordinate_matrix, [x, y])
+                points_sum = utils.sum_points(solution1.coordinate_matrix[index_centroid],
+                                              sub[matched_points[index_centroid]])
+                np.append(offspring_coordinate_matrix, points_sum)
             # Build solution
             offspring_membership_vector = self.get_memb_vect_from_coord_matrix(offspring_coordinate_matrix)
             offspring = Solution(offspring_membership_vector, offspring_coordinate_matrix)
@@ -86,11 +84,9 @@ class MDE:
         col_assignments = self.get_matched_points(cost_matrix)
         new_coordinate_matrix = []
         for index_centroid in range(self.n_clusters):
-            x = solution1.coordinate_matrix[index_centroid][0] - \
-                solution2.coordinate_matrix[col_assignments[index_centroid]][0]
-            y = solution1.coordinate_matrix[index_centroid][1] - \
-                solution2.coordinate_matrix[col_assignments[index_centroid]][1]
-            new_coordinate_matrix.append([x, y])
+            subtraction = utils.subtract_points(solution1.coordinate_matrix[index_centroid],
+                                  solution2.coordinate_matrix[col_assignments[index_centroid]])
+            new_coordinate_matrix.append(subtraction)
         return np.asarray(new_coordinate_matrix)
 
     def get_matched_points(self, cost_matrix):
