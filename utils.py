@@ -4,8 +4,9 @@ from scipy.spatial import distance
 
 
 # Plot clusters
-def show_solution(points, solution):
+def show_solution(points, solution, x_label=None):
     plt.scatter(points['x'], points['y'], c=solution.membership_vector, cmap='rainbow')
+    plt.xlabel(x_label)
     plt.show()
 
 
