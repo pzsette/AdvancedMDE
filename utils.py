@@ -18,10 +18,11 @@ def euclidean_distance(x_point, y_point, x_centroid, y_centroid):
 
 # Build bipartite graph between two solution to start Hungarian algorithm
 def build_bipartite_graph(coord_matrix1, coord_matrix2):
-    cost_matrix = np.empty(shape=(len(coord_matrix1), len(coord_matrix2)))
+    cost_matrix = []
     for point1 in coord_matrix1:
-        cost_row = np.empty(shape=(len(coord_matrix1)))
+        cost_row = []
         for point2 in coord_matrix2:
-            np.append(cost_row, euclidean_distance(point1[0], point1[1], point2[0], point2[1]))
-        np.append(cost_matrix, cost_row)
-    return cost_matrix
+            dst = euclidean_distance(point1[0], point1[1], point2[0], point2[1])
+            cost_row.append(dst)
+        cost_matrix.append(cost_row)
+    return np.asarray(cost_matrix)

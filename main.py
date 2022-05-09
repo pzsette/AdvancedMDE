@@ -1,6 +1,5 @@
 import pandas as pd
 
-import KMeans
 import utils
 from MDE import MDE
 
@@ -8,8 +7,8 @@ from MDE import MDE
 def mde():
     points = pd.read_csv('points/points_reduced.csv')
     k = 5
-    mdo = MDE(points, k)
-    solution = mdo.execute_mdo()
+    mde = MDE(points, k)
+    solution = mde.execute_mdo()
     utils.show_solution(points, solution)
 
 

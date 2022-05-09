@@ -5,6 +5,7 @@ from scipy.optimize import linear_sum_assignment
 
 import KMeans
 import utils
+from Population import Population
 from Solution import Solution
 
 
@@ -16,32 +17,27 @@ class MDE:
         self.f = f
 
     def execute_mdo(self):
-        population = []
-        # Init population with K-random execution of K-means
-        for i in range(self.population_size):
-            population.append(KMeans.compute_solution(self.points, self.n_clusters))
-
-        #for index, solution in enumerate(population):
-        #    print(f'index {index}')
-        #    print(self.get_crossover_solution(index))
+        p = Population(size=self.population_size, n_clusters=self.n_clusters, points=self.points)
+        p.generate_solutions()
 
         # Loop until stopping one stopping criterion is not satisfied
         #while self.check_stopping_criterion():
 
         # Crossover
-        for index, solution in enumerate(population):
+        for index, solution in enumerate(p.solutions):
+            print(f'Solution -> {index}')
+            print(f'Executing crossover...')
             # Select solutions for crossover
             crossover_solution = self.get_crossover_solution(index)
 
             # Execute crossover
-
-            # get random solutions
-            solution3 = population[crossover_solution[0]]
-            solution2 = population[crossover_solution[1]]
-            solution1 = population[crossover_solution[2]]
+            # Get random solutions
+            solution3 = p.get_solution(crossover_solution[0])
+            solution2 = p.get_solution(crossover_solution[1])
+            solution1 = p.get_solution(crossover_solution[2])
             # Subtraction (S2 - S3)
             sub = self.solutions_subtraction(solution2, solution3)
-            # Function f
+            # Function F(S2 - S3)
             for point in sub:
                 point[0] = self.f * point[0]
                 point[1] = self.f * point[1]
@@ -55,19 +51,24 @@ class MDE:
                 y = solution1.coordinate_matrix[index_centroid][1] + \
                     sub[matched_points[index_centroid]][1]
                 np.append(offspring_coordinate_matrix, [x, y])
-
             # Build solution
             offspring_membership_vector = self.get_memb_vect_from_coord_matrix(offspring_coordinate_matrix)
             offspring = Solution(offspring_membership_vector, offspring_coordinate_matrix)
 
+            # Local optimization
+            print('Executing local optimization...')
+            l_offspring = KMeans.compute_solution(self.points, self.n_clusters, start=offspring.coordinate_matrix)
+
             # Mutation
+            print('Executing mutation...')
 
-            if offspring.get_score(self.points) < population[index].get_score(self.points):
-                population[index] = offspring
-
-        # Local optimization
-        solution = KMeans.compute_solution(self.points, self.n_clusters, start=population[0].coordinate_matrix)
-        return solution
+            # Selection phase
+            print('Executing selection...')
+            if l_offspring.get_score(self.points) < p.get_solution(index).get_score(self.points):
+                p.replace_solution(index, offspring)
+            print('------------------------------------')
+        print('Computing best solution among population...')
+        return p.get_best_solution()
 
     def check_stopping_criterion(self):
         return True
@@ -83,25 +84,20 @@ class MDE:
     def solutions_subtraction(self, solution1, solution2):
         cost_matrix = utils.build_bipartite_graph(solution1.coordinate_matrix, solution2.coordinate_matrix)
         col_assignments = self.get_matched_points(cost_matrix)
-        new_coordinate_matrix = np.empty(shape=(self.n_clusters, 2))
+        new_coordinate_matrix = []
         for index_centroid in range(self.n_clusters):
             x = solution1.coordinate_matrix[index_centroid][0] - \
                 solution2.coordinate_matrix[col_assignments[index_centroid]][0]
             y = solution1.coordinate_matrix[index_centroid][1] - \
                 solution2.coordinate_matrix[col_assignments[index_centroid]][1]
-            np.append(new_coordinate_matrix, [x, y])
-        return new_coordinate_matrix
+            new_coordinate_matrix.append([x, y])
+        return np.asarray(new_coordinate_matrix)
 
     def get_matched_points(self, cost_matrix):
         row_ind, col_ind = linear_sum_assignment(cost_matrix)
-        #print(row_ind)
-        #print(col_ind)
-        #print(cost_matrix[row_ind, col_ind].sum())
         return col_ind
 
     def get_memb_vect_from_coord_matrix(self, coordinate_matrix):
-        print(coordinate_matrix.shape)
-
         membership_vector = []
         for row in self.points.iterrows():
             assigned_centroid = 0
@@ -110,7 +106,6 @@ class MDE:
             min_dst = utils.euclidean_distance(x_point, y_point, coordinate_matrix[0][0], coordinate_matrix[0][1])
             for index, centroid in enumerate(coordinate_matrix):
                 dst = utils.euclidean_distance(x_point, y_point, centroid[0], centroid[1])
-                #print("check con n" + str(index) + " " + str(centroid[0]) + "," + str(centroid[1])+" dst: "+str(dst))
                 if dst < min_dst:
                     assigned_centroid = index
                     min_dst = dst
