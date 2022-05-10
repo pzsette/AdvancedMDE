@@ -10,7 +10,15 @@ from Solution import Solution
 
 
 class MDE:
-    def __init__(self, points, n_clusters, population_size=10, f=0.5, max_iteration=3, max_same_solution_repetition=2):
+    def __init__(self,
+                 points,
+                 n_clusters,
+                 population_size=10,
+                 f=0.5,
+                 max_iteration=3,
+                 max_same_solution_repetition=2,
+                 min_population_diversity=5000
+                 ):
         self.points = points
         self.n_clusters = n_clusters
         self.population_size = population_size
@@ -20,17 +28,21 @@ class MDE:
         self.max_iteration = max_iteration
         self.max_same_solution_repetition = max_same_solution_repetition
         self.best_solution = None
+        self.min_population_diversity = min_population_diversity
+        if self.population_size < 4:
+            raise Exception(f'Population size must be 4 or higher')
 
     def execute_mdo(self):
         p = Population(size=self.population_size, n_clusters=self.n_clusters, points=self.points)
         p.generate_solutions()
-
+        self.best_solution = p.get_best_solution()
         # Loop until stopping one stopping criterion is not satisfied
         while self.check_stopping_criterion(p):
             # Crossover
             for index, solution in enumerate(p.solutions):
-                print(f'Solution -> {index}')
-                print(f'Executing crossover...')
+
+                # print(f'Solution -> {index}')
+                # print('Executing crossover...')
                 # Select solutions for crossover
                 crossover_solution = self.get_crossover_solution(index)
 
@@ -54,48 +66,52 @@ class MDE:
                                                   sub[matched_points[index_centroid]])
                     np.append(offspring_coordinate_matrix, points_sum)
                 # Build solution
-                offspring_membership_vector = self.get_memb_vect_from_coord_matrix(offspring_coordinate_matrix)
-                offspring = Solution(offspring_membership_vector, offspring_coordinate_matrix)
+                offspring = Solution(points=self.points, coordinate_matrix=offspring_coordinate_matrix)
+                # Mutation
+                # print('Executing mutation...')
 
                 # Local optimization
-                #print('Executing local optimization...')
+                # print('Executing local optimization...')
                 l_offspring = KMeans.compute_solution(self.points, self.n_clusters, start=offspring.coordinate_matrix)
 
-                # Mutation
-                #print('Executing mutation...')
-
                 # Selection phase
-                print('Executing selection...')
-                if l_offspring.get_score(self.points) < p.get_solution(index).get_score(self.points):
-                    p.replace_solution(index, offspring)
-                    print(f'Solution {index} replaced with offspring')
-                print('------------------------------------')
+                # print('Executing selection...')
+                if l_offspring.get_score() < p.get_solution(index).get_score():
+                    p.replace_solution(index, l_offspring)
+            print('------------------------------------')
 
             print('Computing best solution among population...')
             solution = p.get_best_solution()
             if self.best_solution is None:
                 print('First solution!')
                 self.best_solution = solution
-            elif solution.get_score(self.points) == self.best_solution.get_score(self.points):
+            elif solution.get_score() == self.best_solution.get_score():
                 print('Repetition!')
                 self.same_solution_repetition = self.same_solution_repetition + 1
             else:
-                print(f'Best solution improved {self.best_solution.get_score(self.points)} '
-                      f'-> {solution.get_score(self.points)}')
+                print(f'Best solution improved {self.best_solution.get_score()} '
+                      f'-> {solution.get_score()}')
                 self.best_solution = solution
                 self.same_solution_repetition = 0
-            print(f'Best score -> {self.best_solution.get_score(self.points)}')
+            print(f'Best score -> {self.best_solution.get_score()}')
+
+            print('------------------------------------')
+
+            # Show population at the end of an iteration
+            # for index, solution in enumerate(p.solutions):
+            #    utils.show_solution(self.points, solution, f'Iteration {self.iteration}, solution {index}, score -> {solution.get_score(self.points)}'
+
         return self.best_solution
 
     def check_stopping_criterion(self, p):
         # Population diversity falls below a threshold
-        if p.get_population_diversity() < 50000:
+        if p.get_population_diversity() < self.min_population_diversity:
             print('Terminated due to low population diversity!')
             return False
+        # Max consecutive iterations performed without any improvement in the best solution
         if self.same_solution_repetition >= self.max_same_solution_repetition:
             print(f'Terminate due to {self.max_same_solution_repetition} best solution repetitions')
             return False
-        # Max consecutive iterations performed without any improvement in the best solution
         if self.iteration >= self.max_iteration:
             return False
 
@@ -106,7 +122,7 @@ class MDE:
     def get_crossover_solution(self, index):
         solutions = []
         while len(solutions) < 3:
-            selected_index = random.randint(0, self.population_size-1)
+            selected_index = random.randint(0, self.population_size - 1)
             if selected_index not in solutions and selected_index != index:
                 solutions.append(selected_index)
         return solutions
@@ -117,29 +133,10 @@ class MDE:
         new_coordinate_matrix = []
         for index_centroid in range(self.n_clusters):
             subtraction = utils.subtract_points(solution1.coordinate_matrix[index_centroid],
-                                  solution2.coordinate_matrix[col_assignments[index_centroid]])
+                                                solution2.coordinate_matrix[col_assignments[index_centroid]])
             new_coordinate_matrix.append(subtraction)
         return np.asarray(new_coordinate_matrix)
 
     def get_matched_points(self, cost_matrix):
         row_ind, col_ind = linear_sum_assignment(cost_matrix)
         return col_ind
-
-    def get_memb_vect_from_coord_matrix(self, coordinate_matrix):
-        membership_vector = []
-        for row in self.points.iterrows():
-            assigned_centroid = 0
-            x_point = float(row[1][0])
-            y_point = float(row[1][1])
-            min_dst = utils.euclidean_distance(x_point, y_point, coordinate_matrix[0][0], coordinate_matrix[0][1])
-            for index, centroid in enumerate(coordinate_matrix):
-                dst = utils.euclidean_distance(x_point, y_point, centroid[0], centroid[1])
-                if dst < min_dst:
-                    assigned_centroid = index
-                    min_dst = dst
-            membership_vector.append(assigned_centroid)
-        return np.asarray(membership_vector)
-
-
-
-

@@ -22,12 +22,11 @@ class Population:
     def get_best_solution(self):
         scores = []
         best = self.solutions[0]
-        scores.append(best.get_score(self.points))
+        scores.append(best.get_score())
         for solution in (self.solutions[1:]):
-            scores.append(solution.get_score(self.points))
-            if solution.get_score(self.points) < best.get_score(self.points):
+            scores.append(solution.get_score())
+            if solution.get_score() < best.get_score():
                 best = solution
-        print(scores)
         return best
 
     def get_population_diversity(self):
@@ -35,5 +34,5 @@ class Population:
         for i in range(0, len(self.solutions)):
             for j in range(i + 1, len(self.solutions)):
                 diversity = diversity +\
-                           abs(self.solutions[i].get_score(self.points) - self.solutions[j].get_score(self.points))
+                           abs(self.solutions[i].get_score() - self.solutions[j].get_score())
         return diversity

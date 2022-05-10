@@ -19,7 +19,6 @@ class UtiliTest(unittest.TestCase):
 
     def test_build_bipartite_graph(self):
         b_graph = utils.build_bipartite_graph(np.array([[1.0, 1.0], [-1.0, -1.0]]), np.array([[-1.0, 1.0], [1.0, -1.0]]))
-        print(b_graph)
         self.assertTrue((b_graph == np.array([[2.0, 2.0], [2.0, 2.0]])).all())
 
     def test_subtract_points(self):
