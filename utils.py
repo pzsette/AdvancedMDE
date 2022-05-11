@@ -4,8 +4,8 @@ from scipy.spatial import distance
 
 
 # Plot clusters
-def show_solution(points, solution, x_label=None):
-    plt.scatter(points['x'], points['y'], c=solution.membership_vector, cmap='rainbow')
+def show_solution(solution, x_label=None):
+    plt.scatter(solution.points['x'], solution.points['y'], c=solution.membership_vector, cmap='rainbow')
     plt.xlabel(x_label)
     plt.show()
 
@@ -36,7 +36,7 @@ def subtract_points(point1, point2):
     return [x, y]
 
 
-# Execute point1 - point2
+# Execute point1 + point2
 def sum_points(point1, point2):
     x = point1[0] + point2[0]
     y = point1[1] + point2[1]

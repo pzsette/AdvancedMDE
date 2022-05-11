@@ -24,6 +24,9 @@ class Solution:
     def get_score(self):
         return self._score
 
+    def update_score(self):
+        self._score = self.compute_score()
+
     def get_memb_vect_from_coord_matrix(self):
         membership_vector = []
         for row in self.points.iterrows():

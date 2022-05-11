@@ -7,6 +7,7 @@ import KMeans
 import utils
 from Population import Population
 from Solution import Solution
+from phases.Mutation import Mutator
 
 
 class MDE:
@@ -41,12 +42,11 @@ class MDE:
             # Crossover
             for index, solution in enumerate(p.solutions):
 
-                # print(f'Solution -> {index}')
-                # print('Executing crossover...')
                 # Select solutions for crossover
                 crossover_solution = self.get_crossover_solution(index)
 
                 # Execute crossover
+
                 # Get random solutions
                 solution3 = p.get_solution(crossover_solution[0])
                 solution2 = p.get_solution(crossover_solution[1])
@@ -67,25 +67,26 @@ class MDE:
                     np.append(offspring_coordinate_matrix, points_sum)
                 # Build solution
                 offspring = Solution(points=self.points, coordinate_matrix=offspring_coordinate_matrix)
+
                 # Mutation
                 # print('Executing mutation...')
+                # TODO: Choose appropriate threshold for mutation execution
+                if random.random() > 80:
+                    m = Mutator(offspring, self.points)
+                    offspring = m.execute_mutation()
 
                 # Local optimization
-                # print('Executing local optimization...')
-                l_offspring = KMeans.compute_solution(self.points, self.n_clusters, start=offspring.coordinate_matrix)
+                offspring = KMeans.compute_solution(self.points, self.n_clusters, start=offspring.coordinate_matrix)
+                offspring.update_score()
 
                 # Selection phase
-                # print('Executing selection...')
-                if l_offspring.get_score() < p.get_solution(index).get_score():
-                    p.replace_solution(index, l_offspring)
+                if offspring.get_score() < p.get_solution(index).get_score():
+                    p.replace_solution(index, offspring)
             print('------------------------------------')
 
             print('Computing best solution among population...')
             solution = p.get_best_solution()
-            if self.best_solution is None:
-                print('First solution!')
-                self.best_solution = solution
-            elif solution.get_score() == self.best_solution.get_score():
+            if solution.get_score() == self.best_solution.get_score():
                 print('Repetition!')
                 self.same_solution_repetition = self.same_solution_repetition + 1
             else:
@@ -96,11 +97,6 @@ class MDE:
             print(f'Best score -> {self.best_solution.get_score()}')
 
             print('------------------------------------')
-
-            # Show population at the end of an iteration
-            # for index, solution in enumerate(p.solutions):
-            #    utils.show_solution(self.points, solution, f'Iteration {self.iteration}, solution {index}, score -> {solution.get_score(self.points)}'
-
         return self.best_solution
 
     def check_stopping_criterion(self, p):
@@ -112,6 +108,8 @@ class MDE:
         if self.same_solution_repetition >= self.max_same_solution_repetition:
             print(f'Terminate due to {self.max_same_solution_repetition} best solution repetitions')
             return False
+        # TODO: To-delete -> This is just a safe condition not considered in the original paper
+        # Max number of iteration
         if self.iteration >= self.max_iteration:
             return False
 
