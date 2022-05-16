@@ -14,17 +14,16 @@ class MDE:
     def __init__(self,
                  points,
                  n_clusters,
-                 population_size=10,
-                 f=0.5,
-                 max_iteration=3,
-                 max_same_solution_repetition=2,
+                 population_size=5,
+                 f=0.8,
+                 max_iteration=10000,
+                 max_same_solution_repetition=1000,
                  min_population_diversity=5000
                  ):
         self.points = points
         self.n_clusters = n_clusters
         self.population_size = population_size
         self.f = f
-        self.iteration = 0
         self.same_solution_repetition = 0
         self.max_iteration = max_iteration
         self.max_same_solution_repetition = max_same_solution_repetition
@@ -54,22 +53,21 @@ class MDE:
                 # Subtraction (S2 - S3)
                 sub = self.solutions_subtraction(solution2, solution3)
                 # Function F(S2 - S3)
-                for point in sub:
-                    point[0] = self.f * point[0]
-                    point[1] = self.f * point[1]
+                for i, point in enumerate(sub):
+                    for j, value in enumerate(point):
+                        sub[i][j] = self.f * value
                 # Sum S1 + F(S2 - S3)
                 cost_matrix = utils.build_bipartite_graph(sub, solution3.coordinate_matrix)
                 matched_points = self.get_matched_points(cost_matrix)
-                offspring_coordinate_matrix = np.empty(shape=(self.n_clusters, 2))
+                offspring_coordinate_matrix = []
                 for index_centroid in range(self.n_clusters):
                     points_sum = utils.sum_points(solution1.coordinate_matrix[index_centroid],
                                                   sub[matched_points[index_centroid]])
-                    np.append(offspring_coordinate_matrix, points_sum)
+                    offspring_coordinate_matrix.append(points_sum)
                 # Build solution
-                offspring = Solution(points=self.points, coordinate_matrix=offspring_coordinate_matrix)
+                offspring = Solution(points=self.points, coordinate_matrix=np.asarray(offspring_coordinate_matrix))
 
                 # Mutation
-                # print('Executing mutation...')
                 # TODO: Choose appropriate threshold for mutation execution
                 if random.random() > 80:
                     m = Mutator(offspring, self.points)
@@ -82,21 +80,17 @@ class MDE:
                 # Selection phase
                 if offspring.get_score() < p.get_solution(index).get_score():
                     p.replace_solution(index, offspring)
-            print('------------------------------------')
+            # print('------------------------------------')
 
-            print('Computing best solution among population...')
+            # print('Computing best solution among population...')
             solution = p.get_best_solution()
             if solution.get_score() == self.best_solution.get_score():
                 print('Repetition!')
                 self.same_solution_repetition = self.same_solution_repetition + 1
             else:
-                print(f'Best solution improved {self.best_solution.get_score()} '
-                      f'-> {solution.get_score()}')
+                print(f'Best solution improved {self.best_solution.get_score()} -> {solution.get_score()}')
                 self.best_solution = solution
                 self.same_solution_repetition = 0
-            print(f'Best score -> {self.best_solution.get_score()}')
-
-            print('------------------------------------')
         return self.best_solution
 
     def check_stopping_criterion(self, p):
@@ -108,13 +102,6 @@ class MDE:
         if self.same_solution_repetition >= self.max_same_solution_repetition:
             print(f'Terminate due to {self.max_same_solution_repetition} best solution repetitions')
             return False
-        # TODO: To-delete -> This is just a safe condition not considered in the original paper
-        # Max number of iteration
-        if self.iteration >= self.max_iteration:
-            return False
-
-        print(f'Iteration: {self.iteration}')
-        self.iteration = self.iteration + 1
         return True
 
     def get_crossover_solution(self, index):

@@ -15,10 +15,10 @@ class Solution:
 
     def compute_score(self):
         sum = 0
-        for index, row in self.points.iterrows():
+        for index, point in self.points.iterrows():
             cluster = self.membership_vector[index]
             cluster_center = self.coordinate_matrix[cluster]
-            sum += utils.euclidean_distance(row['x'], row['y'], cluster_center[0], cluster_center[1])
+            sum += utils.euclidean_distance(point, cluster_center)
         return sum
 
     def get_score(self):
@@ -29,13 +29,12 @@ class Solution:
 
     def get_memb_vect_from_coord_matrix(self):
         membership_vector = []
-        for row in self.points.iterrows():
+        for (_, row) in self.points.iterrows():
             assigned_centroid = 0
-            x_point = float(row[1][0])
-            y_point = float(row[1][1])
-            min_dst = utils.euclidean_distance(x_point, y_point, self.coordinate_matrix[0][0], self.coordinate_matrix[0][1])
+            point = tuple(row)
+            min_dst = utils.euclidean_distance(point, self.coordinate_matrix[0])
             for index, centroid in enumerate(self.coordinate_matrix):
-                dst = utils.euclidean_distance(x_point, y_point, centroid[0], centroid[1])
+                dst = utils.euclidean_distance(point, self.coordinate_matrix[index])
                 if dst < min_dst:
                     assigned_centroid = index
                     min_dst = dst
