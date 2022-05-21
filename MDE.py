@@ -1,12 +1,7 @@
 import random
-
-import numpy as np
-from scipy.optimize import linear_sum_assignment
-
 import KMeans
-import utils
 from Population import Population
-from Solution import Solution
+from phases.Crossover import Crossover
 from phases.Mutation import Mutator
 
 
@@ -36,35 +31,24 @@ class MDE:
         p = Population(size=self.population_size, n_clusters=self.n_clusters, points=self.points)
         p.generate_solutions()
         self.best_solution = p.get_best_solution()
+
         # Loop until stopping one stopping criterion is not satisfied
         while self.check_stopping_criterion(p):
             # Crossover
             for index, solution in enumerate(p.solutions):
 
+                # Execute crossover
                 # Select solutions for crossover
                 crossover_solution = self.get_crossover_solution(index)
-
-                # Execute crossover
                 # Get random solutions
                 solution3 = p.get_solution(crossover_solution[0])
                 solution2 = p.get_solution(crossover_solution[1])
                 solution1 = p.get_solution(crossover_solution[2])
-                # Subtraction (S2 - S3)
-                sub = self.solutions_subtraction(solution2, solution3)
-                # Function F(S2 - S3)
-                for i, point in enumerate(sub):
-                    for j, value in enumerate(point):
-                        sub[i][j] = random.uniform(0.5, 0.8) * value
-                # Sum S1 + F(S2 - S3)
-                cost_matrix = utils.build_bipartite_graph(sub, solution3.coordinate_matrix)
-                matched_points = self.get_matched_points(cost_matrix)
-                offspring_coordinate_matrix = []
-                for index_centroid in range(self.n_clusters):
-                    points_sum = utils.sum_points(solution1.coordinate_matrix[index_centroid],
-                                                  sub[matched_points[index_centroid]])
-                    offspring_coordinate_matrix.append(points_sum)
-                # Build solution
-                offspring = Solution(points=self.points, coordinate_matrix=np.asarray(offspring_coordinate_matrix))
+                # Execute Crossover
+                offspring = Crossover.execute_crossover(points=self.points,
+                                                        solution1=solution1,
+                                                        solution2=solution2,
+                                                        solution3=solution3)
 
                 # Mutation
                 if self.do_mutation:
@@ -107,17 +91,3 @@ class MDE:
             if selected_index not in solutions and selected_index != index:
                 solutions.append(selected_index)
         return solutions
-
-    def solutions_subtraction(self, solution1, solution2):
-        cost_matrix = utils.build_bipartite_graph(solution1.coordinate_matrix, solution2.coordinate_matrix)
-        col_assignments = self.get_matched_points(cost_matrix)
-        new_coordinate_matrix = []
-        for index_centroid in range(self.n_clusters):
-            subtraction = utils.subtract_points(solution1.coordinate_matrix[index_centroid],
-                                                solution2.coordinate_matrix[col_assignments[index_centroid]])
-            new_coordinate_matrix.append(subtraction)
-        return np.asarray(new_coordinate_matrix)
-
-    def get_matched_points(self, cost_matrix):
-        row_ind, col_ind = linear_sum_assignment(cost_matrix)
-        return col_ind

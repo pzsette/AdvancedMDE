@@ -1,7 +1,5 @@
 import os
-
 import pandas as pd
-
 import KMeans
 from MDE import MDE
 import argparse
