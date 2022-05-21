@@ -1,3 +1,5 @@
+import math
+
 import numpy as np
 
 import utils
@@ -18,7 +20,7 @@ class Solution:
         for index, point in self.points.iterrows():
             cluster = self.membership_vector[index]
             cluster_center = self.coordinate_matrix[cluster]
-            sum += utils.euclidean_distance(point, cluster_center)
+            sum += math.pow(utils.euclidean_distance(point, cluster_center), 2)
         return sum
 
     def get_score(self):

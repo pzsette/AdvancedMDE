@@ -1,15 +1,42 @@
 import pandas as pd
 
+import KMeans
 from MDE import MDE
+import argparse
 
 
-def mde():
-    points = pd.read_csv('points/liver.txt', sep=" ", header=None)
-
-    mde_executor = MDE(points, n_clusters=5, population_size=150, max_same_solution_repetition=1000)
+def mde(points, size, max_interation, n_clusters):
+    mde_executor = MDE(points, n_clusters=n_clusters, population_size=size, max_same_solution_repetition=max_interation)
     solution = mde_executor.execute_mdo()
-    print(f'Best score -> {solution.get_score()}')
+    print(f'  Best score -> {solution.get_score()}')
+    print(f'  Number of K-MEANS executions -> {KMeans.compute_solution.calls}')
 
 
 if __name__ == '__main__':
-    mde()
+    parser = argparse.ArgumentParser(description="Memetic Differential Evolution (MDE) for clustering")
+    parser.add_argument("-d", type=str, help="dataset filename")
+    parser.add_argument("-s", type=int, help="size of the population")
+    parser.add_argument("-i", type=int, help="number of allowed consecutive iterations without improvements of the best solution")
+    parser.add_argument("-c", type=int, help="number of clusters")
+    parser.add_argument("-v", "--verbose", help="verbose output", action="store_true")
+
+    args = parser.parse_args()
+    dataset = args.d
+    population_size = args.s
+    max_iteration = args.i
+    clusters = args.c
+    verbose = args.verbose
+
+    points = pd.read_csv('points/' + dataset, sep=" ", header=None)
+
+    if population_size < 4:
+        raise argparse.ArgumentTypeError('Population size can\'t be less than 3')
+    if clusters < 2:
+        raise argparse.ArgumentTypeError('At least 2 clusters required')
+    if clusters > len(points):
+        raise argparse.ArgumentTypeError(f'The number of clusters must be less than {len(points)} (number of data points)')
+
+    print(f'--Starting optimization with {dataset} | m = {clusters} clusters')
+    mde(points, population_size, max_iteration, clusters)
+
+

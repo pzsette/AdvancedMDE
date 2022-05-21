@@ -49,3 +49,18 @@ def sum_points(point1, point2):
     for value1, value2 in zip(point1, point2):
         sub.append(value1 + value2)
     return sub
+
+
+# Build probabilities vector for roulette wheel function
+def build_probabilities_vector(solution, points):
+    fitness_vector = []
+    for index, point in points.iterrows():
+        cluster = solution.membership_vector[index]
+        cluster_center = solution.coordinate_matrix[cluster]
+        fitness = euclidean_distance(point, cluster_center)
+        fitness_vector.append(fitness)
+    return fitness_vector
+
+
+def pr(fitness, total_sum, alpha, n):
+    return (1.0 * alpha * fitness / total_sum) + ((1.0 - alpha) / n)

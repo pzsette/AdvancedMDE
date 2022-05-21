@@ -15,17 +15,13 @@ class MDE:
                  points,
                  n_clusters,
                  population_size=5,
-                 f=0.8,
-                 max_iteration=10000,
                  max_same_solution_repetition=1000,
                  min_population_diversity=5000
                  ):
         self.points = points
         self.n_clusters = n_clusters
         self.population_size = population_size
-        self.f = f
         self.same_solution_repetition = 0
-        self.max_iteration = max_iteration
         self.max_same_solution_repetition = max_same_solution_repetition
         self.best_solution = None
         self.min_population_diversity = min_population_diversity
@@ -45,7 +41,6 @@ class MDE:
                 crossover_solution = self.get_crossover_solution(index)
 
                 # Execute crossover
-
                 # Get random solutions
                 solution3 = p.get_solution(crossover_solution[0])
                 solution2 = p.get_solution(crossover_solution[1])
@@ -55,7 +50,7 @@ class MDE:
                 # Function F(S2 - S3)
                 for i, point in enumerate(sub):
                     for j, value in enumerate(point):
-                        sub[i][j] = self.f * value
+                        sub[i][j] = random.uniform(0.5, 0.8) * value
                 # Sum S1 + F(S2 - S3)
                 cost_matrix = utils.build_bipartite_graph(sub, solution3.coordinate_matrix)
                 matched_points = self.get_matched_points(cost_matrix)
@@ -68,10 +63,8 @@ class MDE:
                 offspring = Solution(points=self.points, coordinate_matrix=np.asarray(offspring_coordinate_matrix))
 
                 # Mutation
-                # TODO: Choose appropriate threshold for mutation execution
-                if random.random() > 80:
-                    m = Mutator(offspring, self.points)
-                    offspring = m.execute_mutation()
+                m = Mutator(offspring, self.points)
+                offspring = m.execute_mutation()
 
                 # Local optimization
                 offspring = KMeans.compute_solution(self.points, self.n_clusters, start=offspring.coordinate_matrix)
@@ -80,15 +73,13 @@ class MDE:
                 # Selection phase
                 if offspring.get_score() < p.get_solution(index).get_score():
                     p.replace_solution(index, offspring)
-            # print('------------------------------------')
 
-            # print('Computing best solution among population...')
             solution = p.get_best_solution()
             if solution.get_score() == self.best_solution.get_score():
-                print('Repetition!')
+                print('  Repetition!')
                 self.same_solution_repetition = self.same_solution_repetition + 1
             else:
-                print(f'Best solution improved {self.best_solution.get_score()} -> {solution.get_score()}')
+                print(f'  Best solution improved {self.best_solution.get_score()} -> {solution.get_score()}')
                 self.best_solution = solution
                 self.same_solution_repetition = 0
         return self.best_solution
@@ -96,11 +87,11 @@ class MDE:
     def check_stopping_criterion(self, p):
         # Population diversity falls below a threshold
         if p.get_population_diversity() < self.min_population_diversity:
-            print('Terminated due to low population diversity!')
+            print('--Terminated due to low population diversity!')
             return False
         # Max consecutive iterations performed without any improvement in the best solution
         if self.same_solution_repetition >= self.max_same_solution_repetition:
-            print(f'Terminate due to {self.max_same_solution_repetition} best solution repetitions')
+            print(f'--Terminate due to {self.max_same_solution_repetition} best solution repetitions')
             return False
         return True
 
