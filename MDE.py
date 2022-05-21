@@ -16,7 +16,9 @@ class MDE:
                  n_clusters,
                  population_size=5,
                  max_same_solution_repetition=1000,
-                 min_population_diversity=5000
+                 min_population_diversity=5000,
+                 do_mutation=False,
+                 do_verbose=False
                  ):
         self.points = points
         self.n_clusters = n_clusters
@@ -24,7 +26,9 @@ class MDE:
         self.same_solution_repetition = 0
         self.max_same_solution_repetition = max_same_solution_repetition
         self.best_solution = None
+        self.do_mutation = do_mutation
         self.min_population_diversity = min_population_diversity
+        self.verboseprint = print if do_verbose else lambda *a, **k: None
         if self.population_size < 4:
             raise Exception(f'Population size must be 4 or higher')
 
@@ -63,8 +67,9 @@ class MDE:
                 offspring = Solution(points=self.points, coordinate_matrix=np.asarray(offspring_coordinate_matrix))
 
                 # Mutation
-                m = Mutator(offspring, self.points)
-                offspring = m.execute_mutation()
+                if self.do_mutation:
+                    m = Mutator(offspring, self.points)
+                    offspring = m.execute_mutation()
 
                 # Local optimization
                 offspring = KMeans.compute_solution(self.points, self.n_clusters, start=offspring.coordinate_matrix)
@@ -76,10 +81,10 @@ class MDE:
 
             solution = p.get_best_solution()
             if solution.get_score() == self.best_solution.get_score():
-                print('  Repetition!')
+                self.verboseprint('  Repetition!')
                 self.same_solution_repetition = self.same_solution_repetition + 1
             else:
-                print(f'  Best solution improved {self.best_solution.get_score()} -> {solution.get_score()}')
+                self.verboseprint(f'  Best solution improved {self.best_solution.get_score()} -> {solution.get_score()}')
                 self.best_solution = solution
                 self.same_solution_repetition = 0
         return self.best_solution
