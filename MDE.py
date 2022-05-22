@@ -13,6 +13,7 @@ class MDE:
                  max_same_solution_repetition=1000,
                  min_population_diversity=5000,
                  do_mutation=False,
+                 matching_type='exact',
                  do_verbose=False
                  ):
         self.points = points
@@ -22,6 +23,7 @@ class MDE:
         self.max_same_solution_repetition = max_same_solution_repetition
         self.best_solution = None
         self.do_mutation = do_mutation
+        self.matching_type = matching_type
         self.min_population_diversity = min_population_diversity
         self.verboseprint = print if do_verbose else lambda *a, **k: None
         if self.population_size < 4:
@@ -31,7 +33,6 @@ class MDE:
         p = Population(size=self.population_size, n_clusters=self.n_clusters, points=self.points)
         p.generate_solutions()
         self.best_solution = p.get_best_solution()
-
         # Loop until stopping one stopping criterion is not satisfied
         while self.check_stopping_criterion(p):
             # Crossover
@@ -48,7 +49,8 @@ class MDE:
                 offspring = Crossover.execute_crossover(points=self.points,
                                                         solution1=solution1,
                                                         solution2=solution2,
-                                                        solution3=solution3)
+                                                        solution3=solution3,
+                                                        matching=self.matching_type)
 
                 # Mutation
                 if self.do_mutation:

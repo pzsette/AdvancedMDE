@@ -3,21 +3,8 @@ from matplotlib import pyplot as plt
 from scipy.spatial import distance
 
 
-# Plot clusters
-def show_solution(solution, x_label=None):
-    plt.scatter(solution.points['x'], solution.points['y'], c=solution.membership_vector, cmap='rainbow')
-    plt.xlabel(x_label)
-    plt.show()
-
-def print_scolution_score(solution):
-    print(f'Solution objective: {solution.get_score()}')
-
-
 # Compute Euclidean distance between two points
 def euclidean_distance(point1, point2):
-    '''for value in point:
-    point = (x_point, y_point)
-    centroid = (x_centroid, y_centroid)'''
     point1 = tuple(point1)
     point2 = tuple(point2)
     return distance.euclidean(point1, point2)

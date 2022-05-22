@@ -5,13 +5,14 @@ from MDE import MDE
 import argparse
 
 
-def mde(points, size, max_interation, n_clusters, do_mutation, do_verbose):
+def mde(points, size, max_interation, n_clusters, do_mutation, matching_type, do_verbose):
     mde_executor = MDE(
         points=points,
         n_clusters=n_clusters,
         population_size=size,
         max_same_solution_repetition=max_interation,
         do_mutation=do_mutation,
+        matching_type=matching_type,
         do_verbose=do_verbose
     )
     solution = mde_executor.execute_mdo()
@@ -25,7 +26,11 @@ if __name__ == '__main__':
     parser.add_argument("-s", type=int, help="size of the population")
     parser.add_argument("-i", type=int, help="number of allowed consecutive iterations without improvements of the best solution")
     parser.add_argument("-c", type=int, help="number of clusters")
-    parser.add_argument("-m", help="execute mutation phase", action="store_true")
+    parser.add_argument('-matching',
+                        default='exact',
+                        choices=['exact', 'greedy'],
+                        help='matching algorithm')
+    parser.add_argument("-m", help="execute mutation", action="store_true")
     parser.add_argument("-v", "--verbose", help="verbose output", action="store_true")
 
     args = parser.parse_args()
@@ -35,10 +40,13 @@ if __name__ == '__main__':
     clusters = args.c
     verbose = args.verbose
     mutation = args.m
+    matching = args.matching
+    print(matching)
+    print(f'mutation: {mutation}')
 
     dataset_path = os.path.join('points', dataset)
     if not os.path.exists(dataset_path):
-        raise ValueError(f'Can\'t find datset at the following path: {dataset_path}')
+        raise ValueError(f'Can\'t find dataset at the following path: {dataset_path}')
     points = pd.read_csv('points/' + dataset, sep=" ", header=None)
 
     if population_size < 4:
@@ -54,6 +62,7 @@ if __name__ == '__main__':
         max_interation=max_iteration,
         n_clusters=clusters,
         do_mutation=mutation,
+        matching_type=matching,
         do_verbose=verbose
         )
 

@@ -5,7 +5,7 @@ import numpy as np
 import utils
 
 
-class UtiliTest(unittest.TestCase):
+class UtilsTest(unittest.TestCase):
 
     def test_euclidean_distance(self):
         self.assertEqual(utils.euclidean_distance(0.0, 0.0, 4.0, 0.0), 4.0)
