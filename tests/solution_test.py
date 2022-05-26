@@ -2,7 +2,7 @@ import unittest
 import pandas as pd
 import numpy as np
 
-from Solution import Solution
+from models.Solution import Solution
 
 
 class SolutionTest(unittest.TestCase):

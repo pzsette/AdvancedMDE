@@ -1,7 +1,14 @@
 import os
+import random
+
+import numpy as np
 import pandas as pd
-import KMeans
+
+import utils
+from local_opt import KMeans
+from DMDE import DMDE
 from MDE import MDE
+from GMDE import GMDE
 import argparse
 
 
@@ -16,8 +23,31 @@ def mde(points, size, max_interation, n_clusters, do_mutation, matching_type, do
         do_verbose=do_verbose
     )
     solution = mde_executor.execute_mdo()
-    print(f'  Best score -> {solution.get_score()}')
-    print(f'  Number of K-MEANS executions -> {KMeans.compute_solution.calls}')
+    utils.print_result(solution.get_score(), KMeans.compute_solution.calls)
+
+
+def gmde(points, size, max_iteration, n_clusters, do_verbose):
+    gmde_executor = GMDE(
+        points=points,
+        n_clusters=n_clusters,
+        population_size=size,
+        max_same_solution_repetition=max_iteration,
+        do_verbose=do_verbose
+    )
+    solution = gmde_executor.execute_g_mde()
+    utils.print_result(solution.get_score(), KMeans.compute_solution.calls)
+
+
+def dmde(points, size, max_iteration, n_clusters, do_verbose):
+    dmde_executor = DMDE(
+        points=points,
+        n_clusters=n_clusters,
+        population_size=size,
+        max_same_solution_repetition=max_iteration,
+        do_verbose=do_verbose
+    )
+    solution = dmde_executor.execute_d_mde()
+    utils.print_result(solution.get_score(), KMeans.compute_solution.calls)
 
 
 if __name__ == '__main__':
@@ -41,8 +71,6 @@ if __name__ == '__main__':
     verbose = args.verbose
     mutation = args.m
     matching = args.matching
-    print(matching)
-    print(f'mutation: {mutation}')
 
     dataset_path = os.path.join('points', dataset)
     if not os.path.exists(dataset_path):
@@ -56,7 +84,11 @@ if __name__ == '__main__':
     if clusters > len(points):
         raise argparse.ArgumentTypeError(f'The number of clusters must be less than {len(points)} (number of data points)')
 
-    print(f'--Starting optimization with {dataset} | m = {clusters} clusters')
+    #random.seed(1234)
+    #np.random.seed(1234)
+
+    #print(random.random())
+
     mde(points=points,
         size=population_size,
         max_interation=max_iteration,
@@ -65,5 +97,9 @@ if __name__ == '__main__':
         matching_type=matching,
         do_verbose=verbose
         )
+
+    #gmde(points=points, size=population_size, max_iteration=max_iteration, n_clusters=clusters, do_verbose=verbose)
+
+    #dmde(points=points, size=population_size, max_iteration=max_iteration, n_clusters=clusters, do_verbose=verbose)
 
 

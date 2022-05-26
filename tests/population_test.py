@@ -2,8 +2,8 @@ import unittest
 import pandas as pd
 import numpy as np
 
-from Solution import Solution
-from Population import Population
+from models.Solution import Solution
+from models.Population import Population
 
 
 class PopulationTest(unittest.TestCase):
@@ -28,7 +28,6 @@ class PopulationTest(unittest.TestCase):
         s = self._p.get_solution(1)
         self.assertTrue((s.membership_vector == np.array([0, 0, 1, 1])).all())
         self.assertTrue((s.coordinate_matrix == np.array([[3.0, -3.0], [-2.0, 3.0]])).all())
-
 
     def test_get_best_solution(self):
         s = self._p.get_best_solution()

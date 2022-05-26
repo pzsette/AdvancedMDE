@@ -1,5 +1,7 @@
+from random import randrange
+from numba import jit
+
 import numpy as np
-from matplotlib import pyplot as plt
 from scipy.spatial import distance
 
 
@@ -11,6 +13,7 @@ def euclidean_distance(point1, point2):
 
 
 # Build bipartite graph between two solution to start Hungarian algorithm
+#@jit
 def build_bipartite_graph(coord_matrix1, coord_matrix2):
     cost_matrix = []
     for index1, point1 in enumerate(coord_matrix1):
@@ -23,6 +26,7 @@ def build_bipartite_graph(coord_matrix1, coord_matrix2):
 
 
 # Execute point1 - point2
+@jit
 def subtract_points(point1, point2):
     sub = []
     for value1, value2 in zip(point1, point2):
@@ -31,6 +35,7 @@ def subtract_points(point1, point2):
 
 
 # Execute point1 + point2
+@jit
 def sum_points(point1, point2):
     sub = []
     for value1, value2 in zip(point1, point2):
@@ -51,3 +56,15 @@ def build_probabilities_vector(solution, points):
 
 def pr(fitness, total_sum, alpha, n):
     return (1.0 * alpha * fitness / total_sum) + ((1.0 - alpha) / n)
+
+
+def get_random_in_range_less_one(upper_bound, excluded):
+    index = randrange(upper_bound)
+    while index == excluded:
+        index = randrange(4)
+    return index
+
+
+def print_result(score, calls):
+    print(f'  Best score -> {score}')
+    print(f'  Number of K-MEANS executions -> {calls}')

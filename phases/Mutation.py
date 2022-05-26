@@ -59,7 +59,7 @@ def get_roulette_index(solution, points):
 
 class Mutator:
     def __init__(self, solution, points):
-        self.solution = solution
+        #self.solution = solution
         self.points = points
 
     def execute_mutation(self):
@@ -68,7 +68,7 @@ class Mutator:
         self.solution.coordinate_matrix = np.delete(np.asarray(self.solution.coordinate_matrix), index_to_delete, axis=0)
 
         # Rebuild membership vector
-        self.solution.membership_vector = rebuild_membership_vector(self.points, self.solution.coordinate_matrix)
+        #self.solution.membership_vector = rebuild_membership_vector(self.points, self.solution.coordinate_matrix)
 
         # Select new random point
         index_new_centroid = get_roulette_index(self.solution, self.points)
@@ -76,6 +76,6 @@ class Mutator:
         self.solution.coordinate_matrix = np.vstack([self.solution.coordinate_matrix, new_centroid])
 
         # Rebuild membership vector with new point
-        self.solution.membership_vector = rebuild_membership_vector(self.points, self.solution.coordinate_matrix)
-        self.solution.compute_score()
+        #self.solution.membership_vector = rebuild_membership_vector(self.points, self.solution.coordinate_matrix)
+        #self.solution.compute_score()
         return self.solution
