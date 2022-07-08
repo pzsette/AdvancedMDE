@@ -1,10 +1,12 @@
-import random
 import time
 
+import utils
 from local_opt import KMeans
 from models.Population import Population
+from models.Solution import Solution
 from phases.Crossover import Crossover
 from phases.Mutation import Mutator
+import numpy as np
 
 
 class MDE:
@@ -13,7 +15,7 @@ class MDE:
                  n_clusters,
                  population_size=5,
                  max_same_solution_repetition=1000,
-                 min_population_diversity=5000,
+                 min_population_diversity=0.001,
                  do_mutation=False,
                  matching_type='exact',
                  do_verbose=False
@@ -37,46 +39,52 @@ class MDE:
         p.generate_solutions()
         self.best_solution = p.get_best_solution()
         # Loop until stopping one stopping criterion is not satisfied
-        while self.check_stopping_criterion(p):
+        counter = 0
+        first_time = True
+        while first_time is True or self.check_stopping_criterion(p):
+            first_time = False
+            counter += 1
             for index, solution in enumerate(p.solutions):
-                # Execute crossover
-                # Select solutions for crossover
-                crossover_solution = self.get_crossover_solution(index)
+                crossover_solution_indexes = self.get_crossover_solution(index)
                 # Get random solutions
-                solution3 = p.get_solution(crossover_solution[0])
-                solution2 = p.get_solution(crossover_solution[1])
-                solution1 = p.get_solution(crossover_solution[2])
+                j = crossover_solution_indexes[0]
+                k = crossover_solution_indexes[1]
+                z = crossover_solution_indexes[2]
                 # Execute Crossover
-                offspring = Crossover.execute_crossover(points=self.points,
-                                                        solution1=solution1,
-                                                        solution2=solution2,
-                                                        solution3=solution3,
-                                                        matching=self.matching_type)
+                c = Crossover(p, index1=j, index2=k, index3=z, matching_type=self.matching_type)
+                offspring_coord_matrix = c.execute_crossover()
+
+                offspring_solution = Solution(points=self.points, coordinate_matrix=offspring_coord_matrix)
+
                 # Mutation
                 if self.do_mutation:
-                    m = Mutator(offspring, self.points)
-                    offspring = m.execute_mutation()
+                    m = Mutator(offspring_solution)
+                    m.execute_mutation()
+
+                # Repair
+                offspring_solution.solution_repair(self.n_clusters)
 
                 # Local optimization
-                offspring = KMeans.compute_solution(self.points, self.n_clusters, start=offspring.coordinate_matrix)
-                offspring.update_score()
+                offspring_solution = KMeans.compute_solution(self.points, self.n_clusters, start=offspring_solution.coordinate_matrix)
 
                 # Selection phase
-                if offspring.get_score() < p.get_solution(index).get_score():
-                    p.replace_solution(index, offspring)
-            solution = p.get_best_solution()
-            if solution.get_score() == self.best_solution.get_score():
-                self.verboseprint('  Repetition!')
-                self.same_solution_repetition = self.same_solution_repetition + 1
-            else:
-                self.verboseprint(f'  Best solution improved {self.best_solution.get_score()} -> {solution.get_score()}')
-                self.best_solution = solution
-                self.same_solution_repetition = 0
+                if offspring_solution.get_score() < p.get_solution(index).get_score():
+                    p.replace_solution(index, offspring_solution)
+                    if offspring_solution.get_score() < self.best_solution.get_score():
+                        self.verboseprint(f'  Best solution improved {self.best_solution.get_score()} -> {offspring_solution.get_score()}')
+                        self.best_solution = offspring_solution
+                        self.same_solution_repetition = 0
+                    else:
+                        self.same_solution_repetition = self.same_solution_repetition + 1
+                else:
+                    self.same_solution_repetition = self.same_solution_repetition + 1
+
         return self.best_solution
 
     def check_stopping_criterion(self, p):
         # Population diversity falls below a threshold
         population_diversity = p.get_population_diversity()
+        # print('div', population_diversity)
         if population_diversity < self.min_population_diversity:
             print('--Terminated due to low population diversity!')
             return False
@@ -89,7 +97,7 @@ class MDE:
     def get_crossover_solution(self, index):
         solutions = []
         while len(solutions) < 3:
-            selected_index = random.randint(0, self.population_size - 1)
+            selected_index = np.random.randint(0, self.population_size)
             if selected_index not in solutions and selected_index != index:
                 solutions.append(selected_index)
         return solutions

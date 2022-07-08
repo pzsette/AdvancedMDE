@@ -1,5 +1,4 @@
 import unittest
-
 import numpy as np
 
 import utils
@@ -28,3 +27,7 @@ class UtilsTest(unittest.TestCase):
     def test_sum_points(self):
         self.assertNotEqual(utils.sum_points([3.5, 3.5], [1.2, 1.2]), [2.3, 2.3])
         self.assertEqual(utils.sum_points([3.5, 3.5], [1.2, 1.2]), [4.7, 4.7])
+
+    def test_get_memb_vect_from_coord_matrix(self):
+        memb_vect = utils.get_memb_vect_from_coord_matrix(np.genfromtxt('test_points/test.txt'), np.array([[1.1, 1.1], [3.5, 3.5]]))
+        self.assertTrue((memb_vect == [0, 1, 1]).all())

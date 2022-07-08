@@ -1,9 +1,5 @@
 import math
-import random
-from random import randrange
-
 import numpy as np
-
 import utils
 
 
@@ -40,42 +36,33 @@ def find_index(values, key, first, last):
         return find_index(values, key, imid, last)
 
 
-def get_roulette_index(solution, points):
+def get_roulette_index(coordinate_matrix, points):
     n = len(points)
-    fitness_vector = utils.build_probabilities_vector(solution, points)
+    fitness_vector = utils.build_probabilities_vector(coordinate_matrix=np.array(coordinate_matrix), points=points)
+    # print(fitness_vector)
     fitness_sum = sum(fitness_vector)
 
     # Build random wheel vector
-    alpha = 5
-    pr = []
-    pr.append(utils.pr(fitness_vector[0], fitness_sum, alpha, n))
+    alpha = 0.5
+    pr = [utils.pr(fitness_vector[0], fitness_sum, alpha, n)]
     for i in range(1, len(fitness_vector)):
-        pr.append(pr[i-1] + utils.pr(fitness_vector[0], fitness_sum, alpha, n))
+        pr.append(pr[i-1] + utils.pr(fitness_vector[i], fitness_sum, alpha, n))
 
-    r = random.uniform(0, pr[-1])
+    r = np.random.uniform(0, pr[-1])
 
     return find_index(pr, r, 0, len(fitness_vector)-1)
 
 
 class Mutator:
-    def __init__(self, solution, points):
-        #self.solution = solution
-        self.points = points
+    def __init__(self, solution):
+        self.solution = solution
 
     def execute_mutation(self):
         # Select random solution to delete
-        index_to_delete = randrange(0, len(self.solution.coordinate_matrix))
-        self.solution.coordinate_matrix = np.delete(np.asarray(self.solution.coordinate_matrix), index_to_delete, axis=0)
+        index_to_delete = np.random.randint(low=0, high=len(self.solution.coordinate_matrix))
+        # Remove random centroid
+        self.solution.remove_center(index_to_delete)
 
-        # Rebuild membership vector
-        #self.solution.membership_vector = rebuild_membership_vector(self.points, self.solution.coordinate_matrix)
-
-        # Select new random point
-        index_new_centroid = get_roulette_index(self.solution, self.points)
-        new_centroid = self.points.iloc[index_new_centroid]
-        self.solution.coordinate_matrix = np.vstack([self.solution.coordinate_matrix, new_centroid])
-
-        # Rebuild membership vector with new point
-        #self.solution.membership_vector = rebuild_membership_vector(self.points, self.solution.coordinate_matrix)
-        #self.solution.compute_score()
-        return self.solution
+        # Select new point through roulette wheel function
+        index_new_centroid = get_roulette_index(self.solution.coordinate_matrix, self.solution.points)
+        self.solution.reinsert_center(point_index=index_new_centroid, index_to_replace=index_to_delete)
