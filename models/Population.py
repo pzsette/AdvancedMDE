@@ -13,22 +13,12 @@ class Population:
         self.mean = 0
 
     def generate_solutions(self):
-        # print('random', np.random.uniform(0, 100))
         # Init population with K-random execution of K-means
         for i in range(self.size):
             new_solution = KMeans.compute_solution(self.points, self.n_clusters)
             self.solutions[i] = new_solution
             self.replace_solution(index=i, new_solution=new_solution)
             self.mean += (new_solution.get_score() / self.n_clusters)
-
-    # def get_k_different_points(self, k):
-    #     solutions = []
-    #     # np.random.seed(7)
-    #     while len(solutions) < k:
-    #         selected_index = np.random.randint(0, len(self.points))
-    #         if selected_index not in solutions:
-    #             solutions.append(selected_index)
-    #     return solutions
 
     def get_solution(self, index):
         return self.solutions[index]

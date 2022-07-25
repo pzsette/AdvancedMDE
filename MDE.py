@@ -37,7 +37,7 @@ class MDE:
 
         p = Population(size=self.population_size, n_clusters=self.n_clusters, points=self.points)
         p.generate_solutions()
-        p.print_population_scores()
+        # p.print_population_scores()
         self.best_solution = p.get_best_solution()
         # Loop until stopping one stopping criterion is not satisfied
         counter = 0
@@ -73,7 +73,6 @@ class MDE:
                     p.replace_solution(index, offspring_solution)
                     if offspring_solution.get_score() < self.best_solution.get_score():
                         self.verboseprint(f'  Best solution improved {self.best_solution.get_score()} -> {offspring_solution.get_score()}')
-                        # p.print_population_scores()
                         self.best_solution = offspring_solution
                         self.same_solution_repetition = 0
                     else:
@@ -88,7 +87,7 @@ class MDE:
         population_diversity = p.get_population_diversity()
         if population_diversity < self.min_population_diversity:
             print('--Terminated due to low population diversity!')
-            p.print_population_scores()
+            # p.print_population_scores()
             return False
         # Max consecutive iterations performed without any improvement in the best solution
         if self.same_solution_repetition >= self.max_same_solution_repetition:

@@ -84,7 +84,6 @@ if __name__ == '__main__':
         datasets = [args.d]
     else:
         datasets = ['ionosphere.txt', 'page.txt', 'pendigit.txt']
-        # datasets = ['page.txt']
     population_size = args.s
     max_iteration = args.i
     verbose = args.verbose
@@ -108,7 +107,7 @@ if __name__ == '__main__':
             print('SEED:', seed)
             print('#########')
 
-            for cluster_seq in [30]:
+            for cluster_seq in [2, 5, 10, 15, 30]:
                 print('CLUSTER:', cluster_seq)
                 np.random.seed(seed)
                 start_time = time.time()

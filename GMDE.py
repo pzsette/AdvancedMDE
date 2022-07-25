@@ -31,7 +31,6 @@ class GMDE:
         print(f'--Starting G-MDE optimization | m = {self.n_clusters} clusters')
         p = Population(size=self.population_size, n_clusters=self.n_clusters, points=self.points)
         p.generate_solutions()
-        p.print_population_scores()
         self.best_solution = p.get_best_solution()
         # Loop until stopping one stopping criterion is not satisfied
         first_time = True
@@ -78,7 +77,6 @@ class GMDE:
             print('--Terminated due to low population diversity!')
             return False
         # Max consecutive iterations performed without any improvement in the best solution
-        # print(population_diversity, self.same_solution_repetition)
         if self.same_solution_repetition >= self.max_same_solution_repetition:
             print(f'--Terminate due to {self.max_same_solution_repetition} best solution repetitions')
             return False

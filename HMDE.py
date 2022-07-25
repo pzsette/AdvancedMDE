@@ -72,7 +72,6 @@ class HMDE:
         return self.best_solution
 
     def check_stopping_criterion(self, p):
-        # p.print_population_scores()
         # Population diversity falls below a threshold
         if p.get_population_diversity() < self.min_population_diversity:
             print('--Terminated due to low population diversity!')
