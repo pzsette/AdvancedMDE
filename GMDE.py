@@ -14,7 +14,7 @@ class GMDE:
                  population_size=5,
                  max_same_solution_repetition=1000,
                  matching_type='exact',
-                 min_population_diversity=0.001,
+                 min_population_diversity=0.00001,
                  do_verbose=True,
                  ):
         self.points = points
@@ -31,6 +31,7 @@ class GMDE:
         print(f'--Starting G-MDE optimization | m = {self.n_clusters} clusters')
         p = Population(size=self.population_size, n_clusters=self.n_clusters, points=self.points)
         p.generate_solutions()
+        p.print_population_scores()
         self.best_solution = p.get_best_solution()
         # Loop until stopping one stopping criterion is not satisfied
         first_time = True
@@ -47,7 +48,8 @@ class GMDE:
                                                                    matching_type=self.matching_type)
 
                 # Repair
-                offspring_solution = Solution(points=self.points, coordinate_matrix=generated_coordinate_matrix)
+                offspring_solution = Solution(points=self.points,
+                                              coordinate_matrix=generated_coordinate_matrix)
                 offspring_solution.solution_repair(self.n_clusters)
 
                 # Local optimization
@@ -60,7 +62,7 @@ class GMDE:
                     p.replace_solution(index, candidate_solution)
                     if candidate_solution.get_score() < self.best_solution.get_score():
                         self.verboseprint(
-                            f'  Best solution improved {self.best_solution.get_score()} -> {solution.get_score()}')
+                            f'  Best solution improved {self.best_solution.get_score()} -> {candidate_solution.get_score()}')
                         self.best_solution = candidate_solution
                         self.same_solution_repetition = 0
                     else:

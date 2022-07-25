@@ -14,7 +14,7 @@ class DMDE:
                  population_size=5,
                  max_same_solution_repetition=1000,
                  matching_type='exact',
-                 min_population_diversity=0.001,
+                 min_population_diversity=0.00001,
                  do_verbose=True,
                  ):
         self.points = points
@@ -48,10 +48,14 @@ class DMDE:
                                                                    matching_type=self.matching_type)
 
                 # Repair
-                offspring_solution = Solution(points=self.points, coordinate_matrix=generated_coordinate_matrix).solution_repair(self.n_clusters)
+                offspring_solution = Solution(points=self.points, coordinate_matrix=generated_coordinate_matrix)
+                offspring_solution.solution_repair(self.n_clusters)
+
 
                 # Local optimization
-                candidate_solution = KMeans.compute_solution(self.points, self.n_clusters, start=offspring_solution.coordinate_matrix)
+                candidate_solution = KMeans.compute_solution(self.points,
+                                                             self.n_clusters,
+                                                             start=offspring_solution.coordinate_matrix)
 
                 index_to_compare = DSelection.dmde_selection(p, candidate_solution)
 

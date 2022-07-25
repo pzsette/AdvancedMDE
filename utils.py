@@ -2,14 +2,26 @@ from numba import jit
 
 import numpy as np
 from scipy.spatial import distance
-
 import utils
+
+
+def dist(x, y):
+    subs = []
+    for x_comp, y_comp in zip(x, y):
+        sub = x_comp - y_comp
+        sub_sqrt = sub**2
+        subs.append(sub_sqrt)
+    sum = np.sum(subs)
+    sqrt = np.sqrt(sum)
+    return sqrt
 
 
 # Compute Euclidean distance between two points
 def euclidean_distance(point1, point2):
-    point1 = point1
-    point2 = point2
+    # point1 = point1
+    # point2 = point2
+    # dst = dist(point1, point2)
+    # return dst
     return distance.euclidean(point1, point2)
 
 
@@ -21,7 +33,6 @@ def build_bipartite_graph(coord_matrix1, coord_matrix2):
         for index2, point2 in enumerate(coord_matrix2):
             dst = euclidean_distance(point1, point2)**2
             cost_row.append(dst)
-            #print(f'{point1} con {point2} fa {dst}')
         cost_matrix.append(cost_row)
     return np.asarray(cost_matrix)
 

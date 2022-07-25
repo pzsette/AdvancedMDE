@@ -13,7 +13,7 @@ class HMDE:
                  population_size=5,
                  max_same_solution_repetition=1000,
                  matching_type='exact',
-                 min_population_diversity=5000,
+                 min_population_diversity=0.00001,
                  do_verbose=True,
                  ):
         self.points = points

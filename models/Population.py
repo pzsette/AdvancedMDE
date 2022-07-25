@@ -10,21 +10,31 @@ class Population:
         self.solutions = [None]*size
         self.diff_population = np.zeros((size * (size - 1)) // 2)
         self.best_solution = None
+        self.mean = 0
 
     def generate_solutions(self):
         # print('random', np.random.uniform(0, 100))
         # Init population with K-random execution of K-means
         for i in range(self.size):
             new_solution = KMeans.compute_solution(self.points, self.n_clusters)
-            #print(new_solution.get_score())
             self.solutions[i] = new_solution
             self.replace_solution(index=i, new_solution=new_solution)
-        # print('random', np.random.uniform(0, 100))
+            self.mean += (new_solution.get_score() / self.n_clusters)
+
+    # def get_k_different_points(self, k):
+    #     solutions = []
+    #     # np.random.seed(7)
+    #     while len(solutions) < k:
+    #         selected_index = np.random.randint(0, len(self.points))
+    #         if selected_index not in solutions:
+    #             solutions.append(selected_index)
+    #     return solutions
 
     def get_solution(self, index):
         return self.solutions[index]
 
     def replace_solution(self, index, new_solution):
+        self.mean = self.mean - (self.get_solution(index).get_score() / self.n_clusters) + (new_solution.get_score() / self.n_clusters)
         self.solutions[index] = new_solution
         if self.best_solution is None or new_solution.get_score() < self.best_solution.get_score():
             self.best_solution = new_solution
@@ -40,10 +50,10 @@ class Population:
         return self.best_solution
 
     def get_population_diversity(self):
-        return sum(self.diff_population)
+        return sum(self.diff_population) / self.mean
 
     def print_population_scores(self):
         scores = []
         for solution in self.solutions:
             scores.append(solution.get_score())
-        print(f'{sum(self.diff_population)} - {scores}')
+        print(f'{self.get_population_diversity()} - {scores}')

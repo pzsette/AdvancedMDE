@@ -19,7 +19,7 @@ def mde(points, size, max_interation, n_clusters, do_mutation, matching_type, do
         max_same_solution_repetition=max_interation,
         do_mutation=do_mutation,
         matching_type=matching_type,
-        do_verbose=do_verbose
+        do_verbose=do_verbose,
     )
     return mde_executor.execute_mdo()
 
@@ -83,7 +83,8 @@ if __name__ == '__main__':
     if args.d is not None:
         datasets = [args.d]
     else:
-        datasets = ['ionosphere.txt', 'page.txt', 'pendigit.txt']
+        # datasets = ['ionosphere.txt', 'page.txt', 'pendigit.txt']
+        datasets = ['page.txt']
     population_size = args.s
     max_iteration = args.i
     verbose = args.verbose
@@ -102,15 +103,15 @@ if __name__ == '__main__':
         if population_size < 4:
             raise argparse.ArgumentTypeError('Population size can\'t be less than 3')
 
-        for seed in [16007, 10000, 12345, 00000, 56789]:
-            np.random.seed(seed)
+        # for seed in [16007, 10000, 12345, 00000, 56789]:
+        for seed in [0, 0, 0]:
             print('#########')
             print('SEED:', seed)
             print('#########')
 
-            for cluster_seq in [2, 5, 10, 15, 30]:
+            for cluster_seq in [30]:
                 print('CLUSTER:', cluster_seq)
-
+                np.random.seed(seed)
                 start_time = time.time()
 
                 if method == 'MDE':

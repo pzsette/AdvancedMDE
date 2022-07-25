@@ -15,11 +15,10 @@ class MDE:
                  n_clusters,
                  population_size=5,
                  max_same_solution_repetition=1000,
-                 min_population_diversity=0.001,
+                 min_population_diversity=0.00001,
                  do_mutation=False,
                  matching_type='exact',
-                 do_verbose=False
-                 ):
+                 do_verbose=False):
         self.points = points
         self.n_clusters = n_clusters
         self.population_size = population_size
@@ -35,8 +34,10 @@ class MDE:
 
     def execute_mdo(self):
         print(f'--Starting MDE optimization | m = {self.n_clusters} clusters')
+
         p = Population(size=self.population_size, n_clusters=self.n_clusters, points=self.points)
         p.generate_solutions()
+        p.print_population_scores()
         self.best_solution = p.get_best_solution()
         # Loop until stopping one stopping criterion is not satisfied
         counter = 0
@@ -72,6 +73,7 @@ class MDE:
                     p.replace_solution(index, offspring_solution)
                     if offspring_solution.get_score() < self.best_solution.get_score():
                         self.verboseprint(f'  Best solution improved {self.best_solution.get_score()} -> {offspring_solution.get_score()}')
+                        # p.print_population_scores()
                         self.best_solution = offspring_solution
                         self.same_solution_repetition = 0
                     else:
@@ -84,9 +86,9 @@ class MDE:
     def check_stopping_criterion(self, p):
         # Population diversity falls below a threshold
         population_diversity = p.get_population_diversity()
-        # print('div', population_diversity)
         if population_diversity < self.min_population_diversity:
             print('--Terminated due to low population diversity!')
+            p.print_population_scores()
             return False
         # Max consecutive iterations performed without any improvement in the best solution
         if self.same_solution_repetition >= self.max_same_solution_repetition:
