@@ -83,8 +83,8 @@ if __name__ == '__main__':
     if args.d is not None:
         datasets = [args.d]
     else:
-        # datasets = ['ionosphere.txt', 'page.txt', 'pendigit.txt']
-        datasets = ['page.txt']
+        datasets = ['ionosphere.txt', 'page.txt', 'pendigit.txt']
+        # datasets = ['page.txt']
     population_size = args.s
     max_iteration = args.i
     verbose = args.verbose
@@ -103,8 +103,7 @@ if __name__ == '__main__':
         if population_size < 4:
             raise argparse.ArgumentTypeError('Population size can\'t be less than 3')
 
-        # for seed in [16007, 10000, 12345, 00000, 56789]:
-        for seed in [0, 0, 0]:
+        for seed in [16007, 10000, 12345, 00000, 56789]:
             print('#########')
             print('SEED:', seed)
             print('#########')
