@@ -51,7 +51,6 @@ class DMDE:
                 offspring_solution = Solution(points=self.points, coordinate_matrix=generated_coordinate_matrix)
                 offspring_solution.solution_repair(self.n_clusters)
 
-
                 # Local optimization
                 candidate_solution = KMeans.compute_solution(self.points,
                                                              self.n_clusters,

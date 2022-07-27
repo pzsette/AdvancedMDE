@@ -1,6 +1,7 @@
 import utils
 from local_opt import KMeans
 from models.Population import Population
+from models.Solution import Solution
 from phases import DSelection
 from phases.GreedyGeneration import greedy_generation
 import numpy as np
@@ -45,9 +46,15 @@ class HMDE:
                                                                      solution_to_compare=solution_to_compare,
                                                                      f=np.random.uniform(low=0.5, high=0.8),
                                                                      matching_type=self.matching_type)
+                # Repair
+                offspring_solution = Solution(points=self.points,
+                                              coordinate_matrix=generated_coordinate_matrix)
+                offspring_solution.solution_repair(self.n_clusters)
 
                 # Local optimization
-                candidate_solution = KMeans.compute_solution(self.points, self.n_clusters, start=generated_coordinate_matrix)
+                candidate_solution = KMeans.compute_solution(self.points,
+                                                             self.n_clusters,
+                                                             start=offspring_solution.coordinate_matrix)
 
                 if phi == 1:
                     index_to_compare = index
