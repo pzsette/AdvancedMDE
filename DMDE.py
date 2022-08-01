@@ -14,7 +14,7 @@ class DMDE:
                  population_size=5,
                  max_same_solution_repetition=1000,
                  matching_type='exact',
-                 min_population_diversity=0.00001,
+                 min_population_diversity=0.0001,
                  do_verbose=True,
                  ):
         self.points = points
@@ -31,6 +31,7 @@ class DMDE:
         print(f'--Starting D-MDE optimization | m = {self.n_clusters} clusters')
         p = Population(size=self.population_size, n_clusters=self.n_clusters, points=self.points)
         p.generate_solutions()
+        p.print_population_scores()
         self.best_solution = p.get_best_solution()
         # Loop until stopping one stopping criterion is not satisfied
         first_time = True

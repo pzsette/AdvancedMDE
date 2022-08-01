@@ -102,12 +102,17 @@ if __name__ == '__main__':
         if population_size < 4:
             raise argparse.ArgumentTypeError('Population size can\'t be less than 3')
 
-        for seed in [16007, 10000, 12345, 00000, 56789]:
+        seeds = [16007, 10000, 12345, 00000, 56789]
+        n_cluster = [2, 5, 10, 15, 30]
+
+        result_matrix = [[None for _ in range(len(seeds))] for _ in range(len(n_cluster)*3)]
+
+        for seed_in, seed in enumerate(seeds):
             print('#########')
             print('SEED:', seed)
             print('#########')
 
-            for cluster_seq in [2, 5, 10, 15, 30]:
+            for clus_in, cluster_seq in enumerate(n_cluster):
                 print('CLUSTER:', cluster_seq)
                 np.random.seed(seed)
                 start_time = time.time()
@@ -142,6 +147,17 @@ if __name__ == '__main__':
                                     matching_type=matching,
                                     do_verbose=verbose)
 
-                execution_time = time.time() - start_time
+                # get execution scores
+                score = round(solution.get_score(), 4)
+                k_means_exec = KMeans.get_score()
+                execution_time = round(time.time() - start_time, 2)
 
-                utils.print_result(round(solution.get_score(), 4), KMeans.get_score(), round(execution_time, 2))
+                # update scores matrix
+                result_matrix[clus_in*3][seed_in] = score
+                result_matrix[clus_in*3 + 1][seed_in] = k_means_exec
+                result_matrix[clus_in*3 + 2][seed_in] = execution_time
+
+                # print scores
+                utils.print_result(score, k_means_exec, execution_time)
+
+        utils.print_summary_results(result_matrix=result_matrix, clusters=n_cluster)

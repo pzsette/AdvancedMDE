@@ -18,10 +18,6 @@ def dist(x, y):
 
 # Compute Euclidean distance between two points
 def euclidean_distance(point1, point2):
-    # point1 = point1
-    # point2 = point2
-    # dst = dist(point1, point2)
-    # return dst
     return distance.euclidean(point1, point2)
 
 
@@ -95,6 +91,18 @@ def print_result(score, calls, time):
     print(f'  Solution objective -> {score}')
     print(f'  CPU time (s): {time}')
     print(f'  Number of K-MEANS executions -> {calls}')
+
+
+def print_summary_results(result_matrix, clusters):
+    matrix = np.matrix(result_matrix)
+    print('\n')
+    print('########### RESUME ###########')
+    for clust_in, cluster in enumerate(clusters):
+        print(f'{cluster} CLUSTER')
+        print(f'  Best score -> {np.min(matrix[clust_in*3,:])}')
+        print(f'  Avg K-Means calls -> {np.mean(matrix[clust_in * 3 +1, :])}')
+        print(f'  Avg exec time -> {np.mean(matrix[clust_in * 3 + 2, :])}')
+    print('\n')
 
 
 def has_to_be_repaired(solution, m):
