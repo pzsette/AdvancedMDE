@@ -83,7 +83,7 @@ if __name__ == '__main__':
     if args.d is not None:
         datasets = [args.d]
     else:
-        datasets = ['ionosphere.txt', 'page.txt', 'pendigit.txt']
+        datasets = ['tsplib1060.txt', 'tsplib3039.txt', 'image.txt', 'letters.txt']
     population_size = args.s
     max_iteration = args.i
     verbose = args.verbose
@@ -103,7 +103,7 @@ if __name__ == '__main__':
             raise argparse.ArgumentTypeError('Population size can\'t be less than 3')
 
         seeds = [16007, 10000, 12345, 00000, 56789]
-        n_cluster = [2, 5, 10, 15, 30]
+        n_cluster = [2, 10, 20, 30, 40, 50, 60, 80]
 
         result_matrix = [[None for _ in range(len(seeds))] for _ in range(len(n_cluster)*3)]
 
